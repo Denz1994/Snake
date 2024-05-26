@@ -16,9 +16,10 @@
 #define MOVE_RIGHT 'd'
 #define MOVE_LEFT 'a'
 
-int player_position[2] = {0, 0};
+// Assumes index [0] is head and [length] is tail
+int snake_body[50][2] = {{0, 0}};
 int food_position[2] = {0, 0};
-int score = 0;
+int length = 0;
 
 void print_board()
 {
@@ -37,7 +38,7 @@ void print_board()
 		for (int x = 0; x < COLS - 2; x++)
 		{
 			// Here we represent position. Either the position is filled or it is not.
-			if (x == player_position[0] && y == player_position[1])
+			if (x == snake_body[0][0] && y == snake_body[0][1])
 			{
 				printf("X ");
 			}
@@ -74,14 +75,15 @@ void generate_random_item_position()
 	food_position[1] = rand() % (ROWS);
 }
 
-// Simulate eating food: Update score and regen food position
+// Simulate eating food: Update length and regen food position
 void eat_food()
 {
 	if (
-		player_position[0] == food_position[0] &&
-		player_position[1] == food_position[1])
+		snake_body[0][0] == food_position[0] &&
+		snake_body[0][1] == food_position[1])
 	{
-		score += 1;
+
+		length += 1;
 		generate_random_item_position();
 	}
 }
@@ -109,13 +111,13 @@ void player_move(int direction)
 	}
 
 	// TODO: MAKE SURE WE ARE IN BOUNDS
-	newY = player_position[1] + yDelta;
-	newX = player_position[0] + xDelta;
+	newY = snake_body[0][1] + yDelta;
+	newX = snake_body[0][0] + xDelta;
 
 	if (is_within_bounds(newX, newY))
 	{
-		player_position[1] = newY;
-		player_position[0] = newX;
+		snake_body[0][1] = newY;
+		snake_body[0][0] = newX;
 
 		eat_food();
 	}
@@ -153,10 +155,10 @@ int main()
 	srand(time(NULL));
 	generate_random_item_position();
 
-	while (direction != 'Q')
+	while (direction != 'q')
 	{
 		print_board();
-		printf("Score:\t%i", score);
+		printf("Score:\t%i", length);
 		direction = mygetch();
 		terminal_refresh();
 		if (direction == MOVE_UP ||
@@ -169,6 +171,7 @@ int main()
 	}
 	return 0;
 }
+
 /*
 X X X X X X X X X X X X X X X
 X							X
@@ -181,4 +184,9 @@ X							X
 X							X
 X							X
 X X X X X X X X X X X X X X X
+
+
+ooooox
+
+
 */
