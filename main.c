@@ -40,7 +40,7 @@ void print_board()
 			// Here we represent position. Either the position is filled or it is not.
 			if (x == snake_body[0][0] && y == snake_body[0][1])
 			{
-				printf("X ");
+				printf("x ");
 			}
 			else if (x == food_position[0] && y == food_position[1])
 			{
@@ -48,7 +48,22 @@ void print_board()
 			}
 			else
 			{
-				printf("  ");
+				// TODO: Update Snake body
+				int skip_space = FALSE;
+				for (int i = 0; i <= length; i++)
+				{
+					if (snake_body[i][0] == x & snake_body[i][1] == y)
+					{
+						printf("o ");
+						skip_space = TRUE;
+						break;
+					}
+				}
+				if (skip_space == FALSE)
+				{
+					// Empty spaces
+					printf("  ");
+				}
 			}
 		}
 		printf("|");
@@ -84,6 +99,8 @@ void eat_food()
 	{
 
 		length += 1;
+		snake_body[length][0] = food_position[0];
+		snake_body[length][1] = food_position[1];
 		generate_random_item_position();
 	}
 }
