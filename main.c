@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -15,6 +17,8 @@
 #define MOVE_LEFT 'a'
 
 int player_position[2] = {0, 0};
+int food_position[2] = {0, 0};
+int score = 0;
 
 void print_board()
 {
@@ -32,11 +36,14 @@ void print_board()
 		printf("| ");
 		for (int x = 0; x < COLS - 2; x++)
 		{
-
 			// Here we represent position. Either the position is filled or it is not.
 			if (x == player_position[0] && y == player_position[1])
 			{
-				printf("x ");
+				printf("X ");
+			}
+			else if (x == food_position[0] && y == food_position[1])
+			{
+				printf("+ ");
 			}
 			else
 			{
@@ -59,6 +66,24 @@ int is_within_bounds(int x, int y)
 {
 	// COLS - 2 because we use two characters for each column spacing. Whitespace + whitespace
 	return (0 <= x && x < COLS - 2 && 0 <= y && y < ROWS) ? TRUE : FALSE;
+}
+
+void generate_random_item_position()
+{
+	food_position[0] = rand() % (COLS - 2);
+	food_position[1] = rand() % (ROWS);
+}
+
+// Simulate eating food: Update score and regen food position
+void eat_food()
+{
+	if (
+		player_position[0] == food_position[0] &&
+		player_position[1] == food_position[1])
+	{
+		score += 1;
+		generate_random_item_position();
+	}
 }
 
 void player_move(int direction)
@@ -91,8 +116,11 @@ void player_move(int direction)
 	{
 		player_position[1] = newY;
 		player_position[0] = newX;
+
+		eat_food();
 	}
 }
+
 // Source: https://github.com/ChrisMinich/robots/blob/master/helpers.c#L6-L25
 // This guy is a legend for sourcing the code snippet.
 // TODO: Figure out what this does.
@@ -122,10 +150,13 @@ void terminal_refresh()
 int main()
 {
 	int direction = 0;
+	srand(time(NULL));
+	generate_random_item_position();
 
 	while (direction != 'Q')
 	{
 		print_board();
+		printf("Score:\t%i", score);
 		direction = mygetch();
 		terminal_refresh();
 		if (direction == MOVE_UP ||
