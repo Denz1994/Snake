@@ -57,14 +57,14 @@ void print_board()
 
 int is_within_bounds(int x, int y)
 {
-	// TODO: FIX MACRO USAGE?
-	return (0 <= x && 0 < COLS && 0 <= y && y < ROWS) ? TRUE : FALSE;
+	// COLS - 2 because we use two characters for each column spacing. Whitespace + whitespace
+	return (0 <= x && x < COLS - 2 && 0 <= y && y < ROWS) ? TRUE : FALSE;
 }
 
 void player_move(int direction)
 {
-	int xDelta = 0;
-	int yDelta = 0;
+	int xDelta, yDelta, newX, newY;
+	xDelta = yDelta = newX = newY = 0;
 
 	if (direction == MOVE_UP)
 	{
@@ -84,8 +84,14 @@ void player_move(int direction)
 	}
 
 	// TODO: MAKE SURE WE ARE IN BOUNDS
-	player_position[1] += yDelta;
-	player_position[0] += xDelta;
+	newY = player_position[1] + yDelta;
+	newX = player_position[0] + xDelta;
+
+	if (is_within_bounds(newX, newY))
+	{
+		player_position[1] = newY;
+		player_position[0] = newX;
+	}
 }
 // Source: https://github.com/ChrisMinich/robots/blob/master/helpers.c#L6-L25
 // This guy is a legend for sourcing the code snippet.
@@ -104,30 +110,34 @@ int mygetch(void)
 
 	return ch;
 }
+
+/*
+	Simulates refreshing the screen.
+	See https://stackoverflow.com/questions/55672661/what-does-printf-033h-033j-do-in-c
+*/
+void terminal_refresh()
+{
+	printf("\033[H\033[J");
+}
 int main()
 {
 	int direction = 0;
-	int c = mygetch();
-	printf("Input: %c", c);
-	// print_board();
 
-	// while (direction = mygetch() != 'Q')
-	// {
-	// 	// direction = mygetch();
-	// 	if (direction == MOVE_UP ||
-	// 		direction == MOVE_DOWN ||
-	// 		direction == MOVE_LEFT ||
-	// 		direction == MOVE_RIGHT)
-	// 	{
-	// 		player_move(direction);
-	// 	}
-	// 	printf("\n\n\n\n\n\n\n\n\n\n");
-	// 	printf("\n\n\n\n\n\n\n\n\n\n");
-	// 	printf("\n\n\n\n\n\n\n\n\n\n");
-
+	while (direction != 'Q')
+	{
+		print_board();
+		direction = mygetch();
+		terminal_refresh();
+		if (direction == MOVE_UP ||
+			direction == MOVE_DOWN ||
+			direction == MOVE_LEFT ||
+			direction == MOVE_RIGHT)
+		{
+			player_move(direction);
+		}
+	}
 	return 0;
 }
-
 /*
 X X X X X X X X X X X X X X X
 X							X
