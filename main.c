@@ -15,6 +15,7 @@
 #define MOVE_DOWN 's'
 #define MOVE_RIGHT 'd'
 #define MOVE_LEFT 'a'
+#define QUIT 'q'
 
 // Assumes index [0] is head and [length] is tail
 int snake_body[50][2] = {{0, 0}};
@@ -155,7 +156,7 @@ int main()
 	srand(time(NULL));
 	generate_random_item_position();
 
-	while (direction != 'q')
+	while (direction != QUIT)
 	{
 		print_board();
 		printf("Score:\t%i", length);
