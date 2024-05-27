@@ -49,11 +49,10 @@ void print_board()
 			}
 			else
 			{
-				// TODO: Update Snake body
 				int skip_space = FALSE;
 				for (int i = 0; i <= length; i++)
 				{
-					if (snake_body[i][0] == x & snake_body[i][1] == y)
+					if (snake_body[i][0] == x && snake_body[i][1] == y)
 					{
 						printf("o ");
 						skip_space = TRUE;
@@ -85,6 +84,7 @@ int is_within_bounds(int x, int y)
 	return (0 <= x && x < COLS - 2 && 0 <= y && y < ROWS) ? TRUE : FALSE;
 }
 
+// TODO: Shouldn't be able to spawn in side snake
 void generate_random_item_position()
 {
 	food_position[0] = rand() % (COLS - 2);
@@ -92,7 +92,7 @@ void generate_random_item_position()
 }
 
 // Simulate eating food: Update length and regen food position
-void eat_food()
+int eat_food()
 {
 	if (
 		snake_body[0][0] == food_position[0] &&
@@ -103,7 +103,9 @@ void eat_food()
 		snake_body[length][0] = food_position[0];
 		snake_body[length][1] = food_position[1];
 		generate_random_item_position();
+		return 1;
 	}
+	return 0;
 }
 
 void player_move(int direction)
@@ -128,16 +130,27 @@ void player_move(int direction)
 		xDelta += 1;
 	}
 
-	// TODO: MAKE SURE WE ARE IN BOUNDS
 	newY = snake_body[0][1] + yDelta;
 	newX = snake_body[0][0] + xDelta;
 
 	if (is_within_bounds(newX, newY))
 	{
-		snake_body[0][1] = newY;
+		int x_temp = snake_body[0][0];
+		int y_temp = snake_body[0][1];
+		/*************************************
+		Debug info
+		printf("x_temp: %i\ny_temp: %i\n", x_temp, y_temp);
+		printf("tail: %i, %i\n", snake_body[1][0], snake_body[1][1]);
+		printf("length: %i", length);
+		*************************************/
+		for(int i = length; i >= 1; i --){
+			snake_body[i][0] = snake_body[i-1][0];
+			snake_body[i][1] = snake_body[i-1][1];
+		}
 		snake_body[0][0] = newX;
-
+		snake_body[0][1] = newY;
 		eat_food();
+		
 	}
 }
 
