@@ -16,6 +16,7 @@
 #define MOVE_RIGHT 'd'
 #define MOVE_LEFT 'a'
 #define QUIT 'q'
+#define NO_OP '*' // Player didn't move before input timeout
 
 // Assumes index [0] is head and [length] is tail
 int snake_body[50][2] = {{0, 0}};
@@ -143,14 +144,14 @@ void player_move(int direction)
 		printf("tail: %i, %i\n", snake_body[1][0], snake_body[1][1]);
 		printf("length: %i", length);
 		*************************************/
-		for(int i = length; i >= 1; i --){
-			snake_body[i][0] = snake_body[i-1][0];
-			snake_body[i][1] = snake_body[i-1][1];
+		for (int i = length; i >= 1; i--)
+		{
+			snake_body[i][0] = snake_body[i - 1][0];
+			snake_body[i][1] = snake_body[i - 1][1];
 		}
 		snake_body[0][0] = newX;
 		snake_body[0][1] = newY;
 		eat_food();
-		
 	}
 }
 
@@ -159,14 +160,49 @@ void player_move(int direction)
 // TODO: Figure out what this does.
 int mygetch(void)
 {
-	int ch;
+	int ch = 0;
 	struct termios oldt, newt;
+	struct timeval tv;
+	fd_set readfds;
 
+	// Get the current terminal settings
+	// The stdin_fileNO is a file descriptor. Some integer to represent a specific file in the OS
 	tcgetattr(STDIN_FILENO, &oldt);
 	newt = oldt;
+
+	// Set the terminal to raw mode
 	newt.c_lflag &= ~(ICANON | ECHO);
 	tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-	ch = getchar();
+
+	// Initialize the file descriptor set
+	FD_ZERO(&readfds);
+	FD_SET(STDIN_FILENO, &readfds);
+
+	// Set timeout to 2 seconds
+	tv.tv_sec = 1;
+	tv.tv_usec = 0;
+
+	// Use the select() op to wait for input on stdin. Used to simulate advancing the game state.
+	// We give the file descriptor a new number. Use the
+	int retval = select(STDIN_FILENO + 1, &readfds, NULL, NULL, &tv);
+
+	if (retval == -1)
+	{
+		// Something went wrong
+		perror("select()");
+	}
+	else if (retval)
+	{
+		// Input is available, read it
+		ch = getchar();
+	}
+	else
+	{
+		// No input within the timeout period
+		ch = '*';
+	}
+
+	// Restore the terminal settings
 	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
 
 	return ch;
@@ -182,20 +218,27 @@ void terminal_refresh()
 }
 int main()
 {
-	int direction = 0;
+	int direction = MOVE_RIGHT;
+	int input_direction = NO_OP;
+	
+	// Seeding randomizer
 	srand(time(NULL));
 	generate_random_item_position();
 
 	while (direction != QUIT)
 	{
 		print_board();
-		printf("Score:\t%i", length);
-		direction = mygetch();
 		terminal_refresh();
+		input_direction = mygetch();
+		
+		// If the user did nothing then retain the direction 
+		direction = input_direction == NO_OP ? direction : input_direction;
+		
 		if (direction == MOVE_UP ||
 			direction == MOVE_DOWN ||
 			direction == MOVE_LEFT ||
-			direction == MOVE_RIGHT)
+			direction == MOVE_RIGHT ||
+			direction == NO_OP)
 		{
 			player_move(direction);
 		}

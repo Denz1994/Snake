@@ -4,7 +4,9 @@ Snake Clone
 
 TODO:
 
-- Tail growth logic
+- Restricting movement. Shouldn't be able to go back into tail (i.e. -> -> -> <- is illegal movement)
+- Food shouldn't spawn inside of snake position
+- Boundary collision
 - Tail collision
+- Game over state
 - Instructions
-- Auto-movement
