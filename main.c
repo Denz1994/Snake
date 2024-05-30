@@ -179,8 +179,8 @@ int mygetch(void)
 	FD_SET(STDIN_FILENO, &readfds);
 
 	// Set timeout to 2 seconds
-	tv.tv_sec = 1;
-	tv.tv_usec = 0;
+	tv.tv_sec = 0;
+	tv.tv_usec = 300000;
 
 	// Use the select() op to wait for input on stdin. Used to simulate advancing the game state.
 	// We give the file descriptor a new number. Use the
