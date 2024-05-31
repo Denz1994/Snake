@@ -77,6 +77,9 @@ void print_board()
 		printf("-");
 	}
 	printf("\n\n");
+
+	// Simulates refreshing the screen.
+	printf("\033[H\033[J");
 }
 
 int is_within_bounds(int x, int y)
@@ -109,55 +112,9 @@ int eat_food()
 	return 0;
 }
 
-void player_move(int direction)
-{
-	int xDelta, yDelta, newX, newY;
-	xDelta = yDelta = newX = newY = 0;
-
-	if (direction == MOVE_UP)
-	{
-		yDelta -= 1;
-	}
-	else if (direction == MOVE_DOWN)
-	{
-		yDelta += 1;
-	}
-	else if (direction == MOVE_LEFT)
-	{
-		xDelta -= 1;
-	}
-	else if (direction == MOVE_RIGHT)
-	{
-		xDelta += 1;
-	}
-
-	newY = snake_body[0][1] + yDelta;
-	newX = snake_body[0][0] + xDelta;
-
-	if (is_within_bounds(newX, newY))
-	{
-		int x_temp = snake_body[0][0];
-		int y_temp = snake_body[0][1];
-		/*************************************
-		Debug info
-		printf("x_temp: %i\ny_temp: %i\n", x_temp, y_temp);
-		printf("tail: %i, %i\n", snake_body[1][0], snake_body[1][1]);
-		printf("length: %i", length);
-		*************************************/
-		for (int i = length; i >= 1; i--)
-		{
-			snake_body[i][0] = snake_body[i - 1][0];
-			snake_body[i][1] = snake_body[i - 1][1];
-		}
-		snake_body[0][0] = newX;
-		snake_body[0][1] = newY;
-		eat_food();
-	}
-}
 
 // Source: https://github.com/ChrisMinich/robots/blob/master/helpers.c#L6-L25
 // This guy is a legend for sourcing the code snippet.
-// TODO: Figure out what this does.
 int mygetch(void)
 {
 	int ch = 0;
@@ -178,7 +135,7 @@ int mygetch(void)
 	FD_ZERO(&readfds);
 	FD_SET(STDIN_FILENO, &readfds);
 
-	// Set timeout to 2 seconds
+	// Set timeout
 	tv.tv_sec = 0;
 	tv.tv_usec = 300000;
 
@@ -199,23 +156,14 @@ int mygetch(void)
 	else
 	{
 		// No input within the timeout period
-		ch = '*';
+		ch = NO_OP;
 	}
 
 	// Restore the terminal settings
 	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
-
 	return ch;
 }
 
-/*
-	Simulates refreshing the screen.
-	See https://stackoverflow.com/questions/55672661/what-does-printf-033h-033j-do-in-c
-*/
-void terminal_refresh()
-{
-	printf("\033[H\033[J");
-}
 int main()
 {
 	int direction = MOVE_RIGHT;
@@ -227,8 +175,9 @@ int main()
 
 	while (direction != QUIT)
 	{
+		// Render board layout. All positions are predetermined and we just print out whatever value is at a specific coordinate {coordinates[x][y])
 		print_board();
-		terminal_refresh();
+
 		input_direction = mygetch();
 		
 		// If the user did nothing then retain the direction 
@@ -240,27 +189,49 @@ int main()
 			direction == MOVE_RIGHT ||
 			direction == NO_OP)
 		{
-			player_move(direction);
+			int xDelta, yDelta, newX, newY;
+			xDelta = yDelta = newX = newY = 0;
+
+			if (direction == MOVE_UP)
+			{
+				yDelta -= 1;
+			}
+			else if (direction == MOVE_DOWN)
+			{
+				yDelta += 1;
+			}
+			else if (direction == MOVE_LEFT)
+			{
+				xDelta -= 1;
+			}
+			else if (direction == MOVE_RIGHT)
+			{
+				xDelta += 1;
+			}
+
+			newY = snake_body[0][1] + yDelta;
+			newX = snake_body[0][0] + xDelta;
+
+			if (is_within_bounds(newX, newY))
+			{
+				int x_temp = snake_body[0][0];
+				int y_temp = snake_body[0][1];
+				/*************************************
+				Debug info
+				printf("x_temp: %i\ny_temp: %i\n", x_temp, y_temp);
+				printf("tail: %i, %i\n", snake_body[1][0], snake_body[1][1]);
+				printf("length: %i", length);
+				*************************************/
+				for (int i = length; i >= 1; i--)
+				{
+					snake_body[i][0] = snake_body[i - 1][0];
+					snake_body[i][1] = snake_body[i - 1][1];
+				}
+				snake_body[0][0] = newX;
+				snake_body[0][1] = newY;
+				eat_food();
+				}
+			}
 		}
-	}
 	return 0;
 }
-
-/*
-X X X X X X X X X X X X X X X
-X							X
-X							X
-X							X
-X							X
-X							X
-X							X
-X							X
-X							X
-X							X
-X X X X X X X X X X X X X X X
-
-
-ooooox
-
-
-*/
