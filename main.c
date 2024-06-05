@@ -159,6 +159,13 @@ int mygetch(void)
 		ch = NO_OP;
 	}
 
+	if (ch == MOVE_DOWN|| ch == MOVE_LEFT || ch == MOVE_RIGHT|| ch == MOVE_UP||ch == NO_OP){
+		return ch;
+	}
+	else{
+		return NO_OP;
+	}
+
 	// Restore the terminal settings
 	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
 	return ch;
