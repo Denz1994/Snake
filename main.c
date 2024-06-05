@@ -76,10 +76,20 @@ void print_board()
 	{
 		printf("-");
 	}
+	printf("\nControls:\n\nw a s d to move\nq to quit");
 	printf("\n\n");
 
 	// Simulates refreshing the screen.
 	printf("\033[H\033[J");
+}
+
+int check_snake_collision(int target_x, int target_y){
+	for (int i = 0; i < length; i ++ ){
+		if (snake_body[i][0] == target_x && snake_body[i][1] == target_y ){
+			return 1;
+		}
+	}
+	return 0;
 }
 
 int is_within_bounds(int x, int y)
@@ -162,6 +172,9 @@ int mygetch(void)
 		// No input within the timeout period
 		ch = NO_OP;
 	}
+	
+	// Restore the terminal settings
+	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
 
 	if (ch == MOVE_DOWN|| ch == MOVE_LEFT || ch == MOVE_RIGHT|| ch == MOVE_UP||ch == NO_OP){
 		return ch;
@@ -170,8 +183,6 @@ int mygetch(void)
 		return NO_OP;
 	}
 
-	// Restore the terminal settings
-	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
 	return ch;
 }
 int is_opposite_direction(int current_direction, int new_direction)
@@ -184,15 +195,6 @@ int is_opposite_direction(int current_direction, int new_direction)
         return TRUE;
     }
     return FALSE;
-}
-
-int check_snake_collision(int target_x, int target_y){
-	for (int i = 0; i < length; i ++ ){
-		if (snake_body[i][0] == target_x && snake_body[i][1] == target_y ){
-			return 1;
-		}
-	}
-	return 0;
 }
 
 int main()
@@ -216,7 +218,7 @@ int main()
         {
             direction = input_direction;
         }
-        printf("\ndirection: %c", direction);
+        printf("\nScore: %i", length);
 		
 		if (direction == MOVE_UP ||
 			direction == MOVE_DOWN ||
@@ -247,8 +249,12 @@ int main()
 			newY = snake_body[0][1] + yDelta;
 			newX = snake_body[0][0] + xDelta;
 			if (check_snake_collision(newX, newY)){
-				printf("\nCollision\n");
-				sleep(5);
+				printf("\nGAME OVER: Tail Collision\n");
+				direction = 'q';
+			}
+			if (!is_within_bounds(newX, newY)){
+				printf("\nGAME OVER: Bounds Collision\n");
+				direction = 'q';
 			}
 			if (is_within_bounds(newX, newY))
 			{

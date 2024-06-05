@@ -1,9 +1,6 @@
-# Snake
+# Snake Clone from scratch
 
-Snake Clone
+### Requires gcc. Uses only std libraries.
 
-TODO:
-
-- Boundary collision
-- Game over state
-- Instructions
+1. Open terminal (linux)
+2. Run `clear && gcc main.c && ./a.out`.
