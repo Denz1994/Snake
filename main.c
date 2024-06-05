@@ -88,11 +88,15 @@ int is_within_bounds(int x, int y)
 	return (0 <= x && x < COLS - 2 && 0 <= y && y < ROWS) ? TRUE : FALSE;
 }
 
-// TODO: Shouldn't be able to spawn in side snake
 void generate_random_item_position()
 {
 	food_position[0] = rand() % (COLS - 2);
 	food_position[1] = rand() % (ROWS);
+
+	// Make sure food doesn't spawn inside snake
+	while(check_snake_collision(food_position[0],food_position[1])){
+		generate_random_item_position();
+	}
 }
 
 // Simulate eating food: Update length and regen food position
@@ -182,6 +186,15 @@ int is_opposite_direction(int current_direction, int new_direction)
     return FALSE;
 }
 
+int check_snake_collision(int target_x, int target_y){
+	for (int i = 0; i < length; i ++ ){
+		if (snake_body[i][0] == target_x && snake_body[i][1] == target_y ){
+			return 1;
+		}
+	}
+	return 0;
+}
+
 int main()
 {
 	int direction = MOVE_RIGHT;
@@ -233,7 +246,10 @@ int main()
 
 			newY = snake_body[0][1] + yDelta;
 			newX = snake_body[0][0] + xDelta;
-
+			if (check_snake_collision(newX, newY)){
+				printf("\nCollision\n");
+				sleep(5);
+			}
 			if (is_within_bounds(newX, newY))
 			{
 				int x_temp = snake_body[0][0];
