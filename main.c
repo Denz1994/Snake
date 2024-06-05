@@ -137,7 +137,7 @@ int mygetch(void)
 
 	// Set timeout
 	tv.tv_sec = 0;
-	tv.tv_usec = 300000;
+	tv.tv_usec = 250000;
 
 	// Use the select() op to wait for input on stdin. Used to simulate advancing the game state.
 	// We give the file descriptor a new number. Use the
@@ -163,6 +163,17 @@ int mygetch(void)
 	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
 	return ch;
 }
+int is_opposite_direction(int current_direction, int new_direction)
+{
+    if ((current_direction == MOVE_UP && new_direction == MOVE_DOWN) ||
+        (current_direction == MOVE_DOWN && new_direction == MOVE_UP) ||
+        (current_direction == MOVE_LEFT && new_direction == MOVE_RIGHT) ||
+        (current_direction == MOVE_RIGHT && new_direction == MOVE_LEFT))
+    {
+        return TRUE;
+    }
+    return FALSE;
+}
 
 int main()
 {
@@ -181,7 +192,11 @@ int main()
 		input_direction = mygetch();
 		
 		// If the user did nothing then retain the direction 
-		direction = input_direction == NO_OP ? direction : input_direction;
+        if (input_direction != NO_OP && !is_opposite_direction(direction, input_direction))
+        {
+            direction = input_direction;
+        }
+        printf("\ndirection: %c", direction);
 		
 		if (direction == MOVE_UP ||
 			direction == MOVE_DOWN ||
